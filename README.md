@@ -1,61 +1,89 @@
-# Skill Issue — Workshop Starting Point
+# Skill Issue — workshop starting point
 
-The clone-and-follow-along repo for **"Skill Issue: How to Write Skills That Actually
-Work"** (Baruch Sadogursky). You start with a tiny API and a skill that *kind of*
-works — then you make it actually work, the way you make code work.
+**How To Write Skills That Actually Work**, QCon San Francisco, Thursday
+November 19, 2026, 13:00–16:00 PST. A 301 workshop: bring an agent you already use.
 
-**Slides & shownotes:** https://speaking.jbaru.ch/talks/agentcon-st-louis-2026-skill-issue/
+You start with a small Lego inventory API and a skill that handles every ticket
+through the same expensive code-review workflow. By the end, you can separate
+judgment from deterministic work, measure what context adds, enforce a scoped
+constraint, and distribute and roll back the resulting policy.
 
-## The project
+## Before Thursday
 
-`brickbox` — a tiny Lego brick-inventory API. Know what you can build from the bricks
-you own.
+Bring Git, Python **3.11+**, OpenSSL for the signature lab, and a working Claude Code login. Claude Code is the
+reference harness; authoring principles transfer to other agents, but native
+hooks and activation telemetry differ. Codex review is demonstrated by the
+instructor, not a second account every participant must configure.
 
-```bash
-python -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-# then hit:  GET /bricks   and   GET /sets/cottage/buildable
+Install **ACR 0.4.3** using its [installation guide](https://github.com/jbaruch/agentic-context-registry/blob/main/docs/install.md).
+Use macOS or Linux. **Windows users need WSL**; ACR has no native Windows support
+([issue #14](https://github.com/jbaruch/agentic-context-registry/issues/14)). Run
+Git, Python, Claude Code and ACR inside the same WSL environment.
+
+```sh
+git clone https://github.com/jbaruch/skill-issue-brickbox-start.git
+cd skill-issue-brickbox-start
+python3 -m venv .venv
+# macOS, Linux and WSL:
+. .venv/bin/activate
+python -m pip install --require-hashes -r requirements.txt
+python tools/preflight.py --require-acr --require-claude
 ```
 
-## What's already here — and what's wrong with it
+The dependency lock is generated from `requirements.in`. The first exercise
+intentionally has failing tests; environment readiness does not require making
+them green. Real GitHub PRs and Copilot review access are unnecessary for the
+core labs: review I/O uses fixtures. Model experiments consume your agent quota.
 
-`.claude/skills/fix-the-ticket/SKILL.md` handles "tickets." It works… kind of. The
-description is vague and the conditional is mushy, so it mis-activates and takes the
-heavy code path (branch → PR → review poll) even on a docs-only ticket — burning tokens
-on a review nobody needed. **That's the skill issue.** Your job is to make it actually
-work.
+## Start here
 
-## Follow along — ask your agent to do each task, in order
+Read [WORKBOOK.md](WORKBOOK.md). Keep this clone for the broken-skill and
+script-delegation exercises. Its local `.claude/skills/fix-the-ticket` is
+**intentionally bad**; do not install the reference package on top of it.
 
-Each step is a real engineering practice, not prompt-tweaking.
+```sh
+python -m uvicorn app.main:app --reload
+# GET /bricks
+# GET /sets/cottage/buildable
+```
 
-1. **Kill the non-determinism → a script.** The review summon + poll loop is
-   deterministic; it shouldn't cost model tokens every run. Ask your agent to extract it
-   into `scripts/await_review.py` (a GitHub GraphQL review summon + a bounded poll), with
-   a **pytest that goes red, then green**.
+## Packaging exercise — use a second clone
 
-2. **Remove the activation gamble → rules.** Skills *activate* (and can mis-activate).
-   Rules *apply* — always. Ask your agent "what here must always be true?" and add the
-   mandatory guardrails as rules (e.g. never commit straight to `main`; every PR needs a
-   review; never merge with unaddressed comments). Then prove it: ask it to do the
-   forbidden thing and watch it refuse.
+```sh
+git clone https://github.com/jbaruch/skill-issue-brickbox-start.git ../brickbox-package
+cd ../brickbox-package
+python3 tools/use_packaged_context.py
+acr install github:jbaruch/skill-issue-policy@v0.2.0 --agent claude-code --freshness none --non-interactive
+acr realize
+acr check
+python3 tools/preflight.py --require-acr
+```
 
-3. **Grow a library → package a plugin.** Loose files are a pile. Ask your agent to bundle
-   the skill + script + rules into a distributable plugin (a manifest that declares them)
-   and publish it, so other repos can install it instead of copy-pasting.
+The helper preserves the local skill under `.workshop/local-skill`, outside skill
+discovery. Start a fresh agent session after realization. The installed skill
+has the same logical name but an ACR-prefixed directory; leaving both local and
+packaged definitions discoverable confounds the activation experiment.
 
-4. **Test the fuzzy parts → evals.** "Improve against *what*?" Ask your agent to write an
-   eval scenario and run it **with vs without** the plugin as context — the gap (the
-   *lift*) is the signal that the context actually helps. Watch the scenario for
-   bleeding/leaking.
+The [reference policy](https://github.com/jbaruch/skill-issue-policy) contains the
+finished skill, tests, fixtures, hooks, eval runner and rollback instructions.
+Pin the known-good `v0.2.0` here. Use unversioned/latest installation only when the
+instructor starts the deliberately broken `v0.2.1` rollback exercise.
 
-5. **Keep going — the rest of the practices.** Review across models (don't let a model
-   grade its own family), scan the skill as **code AND a prompt**, and ship to a registry
-   with install/activation telemetry — reuse you can measure, not vibes.
+## GitHub authentication errors
 
-## Stuck? Reference implementation
+`GH_TOKEN` takes precedence over `GITHUB_TOKEN`, then ACR can reuse `gh` login.
+An unrelated, expired or restricted token can change access to public release
+metadata. The message “not found or is inaccessible” alone does not establish
+whether the repository, release or token is the problem. Compare the exact
+endpoint authenticated versus anonymous without displaying token values.
+Never paste tokens into the exercise. Clearing variables does not force anonymous
+access if `gh` or Git's credential helper still supplies credentials.
 
-The finished plugin lives on the Tessl registry as `jbaruch/skill-issue-policy`
-(`tessl install jbaruch/skill-issue-policy`). Peek if you're stuck — but try it yourself
-first; the point is the doing.
+## Recovery
+
+Every exercise names its reference artifact and an observable success condition.
+If blocked, inspect that reference and resume the next lab. For a GitHub outage,
+use a locally provided reference checkout with `acr install ../skill-issue-policy`
+and `acr realize`; this rehearses realization but not published-release rollback.
+The instructor supplies observed release evidence and a saved model experiment;
+example output is never presented as a run that did not happen.
