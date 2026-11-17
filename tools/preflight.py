@@ -10,6 +10,7 @@ import sys
 p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('--require-acr', action='store_true')
 p.add_argument('--require-claude', action='store_true')
+p.add_argument('--require-signing', action='store_true')
 a = p.parse_args()
 errors = []
 print('Python:', sys.version.split()[0])
@@ -32,6 +33,14 @@ for key in ['GH_TOKEN', 'GITHUB_TOKEN']:
     print(key + ':', 'set (value hidden)' if os.environ.get(key) else 'unset')
 if os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN'):
     print('For GitHub errors, compare authenticated and anonymous access; do not display tokens.')
+if a.require_signing:
+    openssl = shutil.which('openssl')
+    if not openssl:
+        errors.append('OpenSSL is required for the signature lab.')
+    else:
+        r = subprocess.run([openssl, 'version'], capture_output=True, text=True, timeout=15)
+        print('OpenSSL:', r.stdout.strip())
+        if r.returncode: errors.append('OpenSSL version check failed.')
 for error in errors: print('FAIL:', error, file=sys.stderr)
 print('Preflight:', 'FAIL' if errors else 'PASS')
 sys.exit(bool(errors))

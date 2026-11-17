@@ -10,7 +10,7 @@ constraint, and distribute and roll back the resulting policy.
 
 ## Before Thursday
 
-Bring Git, Python **3.11+**, and a working Claude Code login. Claude Code is the
+Bring Git, Python **3.11+**, OpenSSL for the signature lab, and a working Claude Code login. Claude Code is the
 reference harness; authoring principles transfer to other agents, but native
 hooks and activation telemetry differ. Codex review is demonstrated by the
 instructor, not a second account every participant must configure.
