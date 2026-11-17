@@ -53,7 +53,7 @@ python -m uvicorn app.main:app --reload
 git clone https://github.com/jbaruch/skill-issue-brickbox-start.git ../brickbox-package
 cd ../brickbox-package
 python3 tools/use_packaged_context.py
-acr install github:jbaruch/skill-issue-policy@v0.1.6 --agent claude-code --freshness none --non-interactive
+acr install github:jbaruch/skill-issue-policy@v0.2.0 --agent claude-code --freshness none --non-interactive
 acr realize
 acr check
 python3 tools/preflight.py --require-acr
@@ -66,8 +66,8 @@ packaged definitions discoverable confounds the activation experiment.
 
 The [reference policy](https://github.com/jbaruch/skill-issue-policy) contains the
 finished skill, tests, fixtures, hooks, eval runner and rollback instructions.
-Pin the known-good `v0.1.6` here. Use unversioned/latest installation only when the
-instructor starts the deliberately broken `v0.1.7` rollback exercise.
+Pin the known-good `v0.2.0` here. Use unversioned/latest installation only when the
+instructor starts the deliberately broken `v0.2.1` rollback exercise.
 
 ## GitHub authentication errors
 

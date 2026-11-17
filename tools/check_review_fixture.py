@@ -2,7 +2,7 @@
 """Behavior check for the realized release. Does not read a version string.
 
 Exit 0 only when the installed helper receives the new COMMENTED review and
-does not authorize merge. v0.1.7 intentionally fails this check.
+does not authorize merge. v0.2.1 intentionally fails this check.
 """
 import json
 from pathlib import Path

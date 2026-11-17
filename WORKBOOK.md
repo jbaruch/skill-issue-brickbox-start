@@ -1,7 +1,7 @@
 # Workshop lab book
 
 Work locally. Do not publish, push or merge real changes during these exercises.
-The reference solution is `jbaruch/skill-issue-policy@v0.1.6`. Keep task prompts,
+The reference solution is `jbaruch/skill-issue-policy@v0.2.0`. Keep task prompts,
 eval rubrics and generated outputs separate.
 
 ## 1. Observe the wrong workflow
@@ -113,7 +113,7 @@ If this demonstration is not rehearsed, mark it pending rather than claiming
 that ACR's content hash implements it.
 
 Follow the reference README rollback exercise: install the intentionally regressed
-latest, observe the COMMENTED-review fixture timeout, hold `v0.1.6`, realize,
+latest, observe the COMMENTED-review fixture timeout, hold `v0.2.0`, realize,
 repeat the same fixture, update and verify that the hold remains in effect.
 Predict what resume will do while latest is still broken.
 
