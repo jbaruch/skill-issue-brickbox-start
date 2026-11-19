@@ -114,6 +114,23 @@ Claude found that a missing starter could make the eval quit after spending
 quota in the no-context group. The follow-up validates the starter before
 running any model when the broad-skill group is selected.
 
+### Review interpretation
+
+The Jev lab asks what a comment means, using a fixed set of answers. The
+table below describes the classroom replay, which uses handwritten
+answers. A live Jev run can disagree with those labels.
+
+| Case | Replay label | What the routing code does |
+| --- | --- | --- |
+| Required change and its paraphrase | `required_change` | Records the same label for both. |
+| Optional follow-up | `optional_suggestion` | Records the suggestion label. |
+| Unclear request | `not_enough_evidence` | Routes to reasoning. |
+| Close call | `required_change` at 0.51 | Routes to reasoning because the demo threshold is 0.80. |
+
+A reviewer's GitHub state controls review gating. Read the actual review
+body and inline comments to understand the feedback. See
+[coding-policy's review-reading rule](https://github.com/jbaruch/coding-policy/blob/main/rules/reviewer-feedback-reading.md).
+
 ## 6. Verify and roll back
 
 Cisco skill-scanner 2.2.0 reported zero findings on the clean reference
