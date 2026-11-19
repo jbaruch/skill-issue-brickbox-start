@@ -15,16 +15,19 @@ a = p.parse_args()
 errors = []
 print('Python:', sys.version.split()[0])
 if sys.version_info < (3, 11): errors.append('Python 3.11 or newer is required.')
-for tool, required in [('git', True), ('acr', a.require_acr), ('claude', a.require_claude)]:
+tools = [('git', True), ('acr', a.require_acr)]
+if a.require_claude:
+    tools.append(('claude', True))
+for tool, required in tools:
     exe = shutil.which(tool)
     if exe:
         r = subprocess.run([exe, '--version'], capture_output=True, text=True, timeout=15)
         print(tool + ':', (r.stdout or r.stderr).splitlines()[0] if (r.stdout or r.stderr) else 'installed')
-        if r.returncode: errors.append(tool + ' version check failed.')
+        if r.returncode and required: errors.append(tool + ' version check failed.')
     elif required: errors.append(tool + ' is missing.')
     else: print(tool + ': optional for local Python labs; not found')
 if sys.platform == 'win32' and a.require_acr:
-    errors.append('ACR 0.4.3 has no native Windows support. Run the workshop in WSL.')
+    errors.append('ACR requires macOS, Linux, or WSL for this workshop. Run the workshop in WSL.')
 root = Path(__file__).resolve().parents[1]
 skills = root / '.claude/skills'
 if (skills / 'fix-the-ticket').exists() and any(skills.glob('acr__jbaruch__skill-issue-policy__*')):
