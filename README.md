@@ -4,7 +4,8 @@
 November 19, 2026, 13:00 to 16:00 PST, Seacliff C.
 
 Open the [workbook](WORKBOOK.md) in this repo. The [exercise evidence](EVIDENCE.md)
-is in the same clone. You can use it if a live run or install is slow.
+is in the same clone. It includes the [required mechanism rule](examples/mechanism-rule.md)
+and a local replay for the Jev lab.
 
 ## Before coming to the room
 

@@ -4,6 +4,10 @@ Follow the [starter setup](README.md) first. Use the first clone to edit the
 skill and selector. Use `brickbox-package` for ACR and the hook. The labs use
 local fixtures. Leave real GitHub PRs, pushes and merges out of the exercises.
 
+Apply the [mechanism rule](examples/mechanism-rule.md) to every workflow step
+you author. Choose deterministic code, a bounded decision model, or a
+reasoning model. Exercise 5 runs all three on the review workflow.
+
 [1. Route a docs request](#1-route-a-docs-request) |
 [2. Fix the selector](#2-fix-the-selector) |
 [3. Score the plans](#3-score-the-plans) |
@@ -35,6 +39,14 @@ request and one code request in separate fresh sessions, or write down
 what you'd look for in each trace if you're short on time. The
 [reference descriptions](https://github.com/jbaruch/skill-issue-policy/tree/v0.2.0/skills)
 are there if you get stuck.
+
+Keep the prompts as a two-case eval for the description change. Start each
+case with a fresh session on the same committed app. The docs-only case
+should leave the code skill unopened and edit only the README. For a
+positive control, ask for a plan to change the API's behavior and its tests,
+with all GitHub actions out of scope. The code skill should be selected
+when the client exposes that signal. Score routing and the resulting file
+changes separately. Record a missing signal as unobserved.
 
 Before moving on, tell a partner what the agent read and what it actually did.
 The [Codex rehearsal](EVIDENCE.md#1-route-a-docs-request) shows how those
@@ -76,7 +88,10 @@ excerpt for each group. For the code task, the grader looks for
 it checks whether that file exists. Compare your score with the table.
 
 What would each of these checks miss? Inspect the repository value passed
-to `--repo` in the fixed plan. The saved runs used Claude Code with context
+to `--repo` in the fixed plan. For a stronger eval, put the intended repo
+in the task data, then check the parsed command names that exact repo.
+Leave the expected command and rubric outside the agent's workspace.
+A sentence that merely mentions the command should fail that check. The saved runs used Claude Code with context
 supplied directly and native skill discovery disabled. Use your exercise 1
 trace when discussing native routing.
 
@@ -124,7 +139,8 @@ your partner or a second agent the proposed change and this contract:
 a completed review ends the wait, and the caller still checks whether it
 can merge.
 
-Ask for a specific input, expected result, and test. In your first clone,
+Ask for a specific input, expected result, and test. The PR #8 example
+uses a different model family to review the author's change. In your first clone,
 add a test to `lab-tests/test_review_waiter.py` using the existing
 `review()` and `choose()` helpers. A matching `CHANGES_REQUESTED` review
 should be returned. Try the proposed filter in a scratch copy of the
@@ -152,12 +168,44 @@ what change you'd approve. This is how an agent's rough run turns into a
 reviewed policy change. Keep the same test when someone edits the policy
 again.
 
+### Classify the review with Jev
+
+Read the [mechanism rule](examples/mechanism-rule.md). Python already knows
+how to match a reviewer's identity and commit. Use a decision model when
+the input contains a review comment and the answer is a fixed category.
+Use a reasoning model when the comment leaves an open question that
+requires more evidence or a proposed fix.
+
+From the first clone, read the synthetic comments in `tools/jev_review.py`.
+Predict which two comments ask for the same thing. Then run the lab.
+
+```sh
+python3 tools/jev_review.py --request
+python3 tools/jev_review.py
+```
+
+The first command shows the Jev Choice request. The second runs the
+routing code on handwritten sample answers. Find the two paraphrases
+that receive the same label. Then find the two rows sent to reasoning:
+one has an explicit insufficient-evidence answer and one has a score
+below the classroom threshold. Say what you would need from the reviewer
+before recommending a next step for either comment.
+
+If you see the instructor run the live request, compare Jev's choices
+with your labels. A valid answer type still needs to match the evidence.
+Read every review in the actual PR process. The label and the score
+supply no approval to merge.
+
 ## 6. Verify and roll back
 
 Read the [scan and signature results](EVIDENCE.md#6-verify-and-roll-back).
 For each result, say what it checks. A scanner inspects the files it
 receives. The verifier authenticates the bytes using a separately supplied
 public key. The fixture checks review behavior after installation.
+
+The workshop package runs this exercise against its bundled fixture. In
+coding-policy's release workflow, use the approved review tools and
+current-head merge checks for real PRs.
 
 Try the published releases in `brickbox-package`. Use the same `agent`
 you set for exercise 4. The release step is written in blocks so you can
