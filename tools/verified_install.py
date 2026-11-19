@@ -74,6 +74,8 @@ def main():
     p.add_argument('--trusted-key', type=Path, required=True)
     p.add_argument('--project', type=Path, default=Path.cwd())
     p.add_argument('--verify-only', action='store_true')
+    p.add_argument('--agent', choices=('codex', 'claude-code', 'cursor'), default='claude-code',
+                   help='ACR adapter used when installing the verified package')
     args = p.parse_args()
     try:
         with tempfile.TemporaryDirectory(prefix='qcon-verified-') as temporary:
@@ -88,7 +90,7 @@ def main():
                 retained = Path(tempfile.mkdtemp(prefix='verified-policy-', dir=store))
                 shutil.copytree(source, retained, dirs_exist_ok=True)
                 subprocess.run(['acr', 'install', str(retained), '--project', str(project),
-                                '--agent', 'claude-code', '--freshness', 'none', '--non-interactive'], check=True, timeout=30)
+                                '--agent', args.agent, '--freshness', 'none', '--non-interactive'], check=True, timeout=30)
                 subprocess.run(['acr', 'realize', '--project', str(project)], check=True, timeout=30)
                 evidence['retained_source'] = str(retained)
             print(json.dumps({'signature_valid': True, 'installed': not args.verify_only, **evidence}))
